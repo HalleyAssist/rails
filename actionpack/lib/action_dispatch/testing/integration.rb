@@ -110,7 +110,6 @@ module ActionDispatch
       # A running counter of the number of requests processed.
       attr_accessor :request_count
 
-      include ActionDispatch::Routing::UrlFor
 
       # Create and initialize a new Session instance.
       def initialize(app)
@@ -614,7 +613,6 @@ module ActionDispatch
       include ActionController::TemplateAssertions
 
       included do
-        include ActionDispatch::Routing::UrlFor
         include UrlOptions # don't let UrlFor override the url_options method
         ActiveSupport.run_load_hooks(:action_dispatch_integration_test, self)
         @@app = nil

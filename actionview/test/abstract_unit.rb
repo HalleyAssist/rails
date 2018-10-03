@@ -161,7 +161,6 @@ class ActionDispatch::IntegrationTest < ActiveSupport::TestCase
   end
 end
 
-ActionView::RoutingUrlFor.include(ActionDispatch::Routing::UrlFor)
 
 module ActionController
   class Base

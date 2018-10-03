@@ -9,7 +9,6 @@ module AbstractController
   # <tt>_routes</tt> implementation.
   module UrlFor
     extend ActiveSupport::Concern
-    include ActionDispatch::Routing::UrlFor
 
     def _routes
       raise "In order to use #url_for, you must include routing helpers explicitly. " \

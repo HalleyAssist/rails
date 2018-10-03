@@ -127,12 +127,10 @@ module TestGenerationPrefix
     end
 
     class EngineObject
-      include ActionDispatch::Routing::UrlFor
       include BlogEngine.routes.url_helpers
     end
 
     class AppObject
-      include ActionDispatch::Routing::UrlFor
       include RailsApplication.routes.url_helpers
     end
 

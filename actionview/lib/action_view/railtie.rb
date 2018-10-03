@@ -63,12 +63,6 @@ module ActionView
       end
     end
 
-    initializer "action_view.setup_action_pack" do |app|
-      ActiveSupport.on_load(:action_controller) do
-        ActionView::RoutingUrlFor.include(ActionDispatch::Routing::UrlFor)
-      end
-    end
-
     initializer "action_view.collection_caching", after: "action_controller.set_configs" do |app|
       PartialRenderer.collection_cache = app.config.action_controller.cache_store
     end
