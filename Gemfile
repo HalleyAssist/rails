@@ -126,13 +126,13 @@ group :test do
 end
 
 platforms :ruby, :mswin, :mswin64, :mingw, :x64_mingw do
-  gem "nokogiri", ">= 1.8.1"
+  gem "nokogiri", ">= 1.8.1", require: false
 
   # Needed for compiling the ActionDispatch::Journey parser.
   gem "racc", ">=1.4.6", require: false
 
   # Active Record.
-  gem "sqlite3", "~> 1.3.6"
+  gem "sqlite3", "~> 1.3.6", require: false
 
   group :db do
     gem "pg", ">= 0.18.0"
