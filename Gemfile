@@ -44,6 +44,8 @@ gem "rb-inotify", github: "matthewd/rb-inotify", branch: "close-handling", requi
 # https://github.com/puma/puma/pull/1345
 gem "stopgap_13632", github: "pixeltrix/stopgap_13632", platforms: :mri if RUBY_VERSION < "2.3"
 
+gem 'rr3', :github => 'HalleyAssist/rr3'
+
 group :doc do
   gem "sdoc", "~> 1.0"
   gem "redcarpet", "~> 3.2.3", platforms: :ruby
