@@ -32,6 +32,8 @@ gem "rubocop", ">= 0.47", require: false
 # https://github.com/guard/rb-inotify/pull/79
 gem "rb-inotify", github: "matthewd/rb-inotify", branch: "close-handling", require: false
 
+gem 'rr3', github: 'HalleyAssist/rr3', require: false
+
 group :doc do
   gem "sdoc", "~> 1.0"
   gem "redcarpet", "~> 3.2.3", platforms: :ruby
@@ -112,9 +114,6 @@ end
 
 platforms :ruby, :mswin, :mswin64, :mingw, :x64_mingw do
   gem "nokogiri", ">= 1.8.1"
-
-  # Needed for compiling the ActionDispatch::Journey parser.
-  gem "racc", ">=1.4.6", require: false
 
   # Active Record.
   gem "sqlite3", "~> 1.3.6"

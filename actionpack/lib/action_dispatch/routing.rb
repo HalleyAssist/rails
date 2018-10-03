@@ -249,11 +249,8 @@ module ActionDispatch
   module Routing
     extend ActiveSupport::Autoload
 
-    autoload :Mapper
     autoload :RouteSet
     autoload :RoutesProxy
-    autoload :UrlFor
-    autoload :PolymorphicRoutes
 
     SEPARATORS = %w( / . ? ) #:nodoc:
     HTTP_METHODS = [:get, :head, :post, :patch, :put, :delete, :options] #:nodoc:
