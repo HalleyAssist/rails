@@ -4,12 +4,12 @@ require "active_support/core_ext/array/extract_options"
 
 module ActionDispatch
   module Routing
-	  class RoutingService
+	  class RouteSet
 		@@METHODS = ["GET","POST","DELETE","PUT","PATCH"]
 
 public 
 		def self.new_with_config (config)
-		  RoutingService.new
+		  RouteSet.new
 		end
 
 		def initialize
