@@ -20,8 +20,8 @@ else
 end
 
 gem "rack-cache", "~> 1.2"
-gem "coffee-rails"
-gem "sass-rails"
+gem "coffee-rails", require: false
+gem "sass-rails", require: false
 gem "turbolinks", "~> 5"
 
 # require: false so bcrypt is loaded only when has_secure_password is used.
