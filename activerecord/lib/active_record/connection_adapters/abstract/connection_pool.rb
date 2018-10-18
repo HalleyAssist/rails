@@ -292,17 +292,24 @@ module ActiveRecord
         def initialize(pool, frequency)
           @pool      = pool
           @frequency = frequency
+          @stopping  = false
         end
 
         def run
           return unless frequency && frequency > 0
           Thread.new(frequency, pool) { |t, p|
             loop do
+              break if @stopping
               sleep t
+              break if @stopping
               p.reap
               p.flush
             end
           }
+        end
+
+        def stop
+          @stopping = true
         end
       end
 
