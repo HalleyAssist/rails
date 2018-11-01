@@ -22,7 +22,8 @@ public
 		end
 
 		def rtrim (path)
-		  path.chomp('/') if path.length > 1
+			return path.chomp('/') if path.length > 1
+			path
 		end
 		
 		def call(env)
