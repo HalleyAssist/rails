@@ -112,16 +112,10 @@ module ActiveRecord
 		@automatic_reconnect = true
 		@now_connecting = 0
 		@threads_blocking_new_connections = 0
-		@lock_thread = false
 	  end
 
 	  def lock_thread=(lock_thread)
 		trace "ConnectionPool.lock_thread"
-		if lock_thread
-		  @lock_thread = Thread.current
-		else
-		  @lock_thread = nil
-		end
 	  end
 
 	  def forbid_implicit_checkout_for_thread!
@@ -129,17 +123,18 @@ module ActiveRecord
 	  end
 	  
 	  def real_connection
-		@thread_cached_conns[connection_cache_key(@lock_thread || Thread.current)] ||= checkout
+		trace "ConnectionPool.real_connection"
+		@thread_cached_conns[connection_cache_key(Thread.current)] = checkout
 	  end
 
 	  def connection
-		trace "ConnectionPool.connection"
-		cp = @thread_cached_conns[connection_cache_key(@lock_thread || Thread.current)]
+		trace "ConnectionPool.connection (#{connection_cache_key(Thread.current)}) \"#{Thread.current.name}\""
+		cp = @thread_cached_conns[connection_cache_key(Thread.current)]
 		return cp if cp
 		if Thread.current[:active_record_forbid_implicit_connections] then
 		  raise ImplicitConnectionForbiddenError.new("Implicit ActiveRecord checkout attempted when Thread :force_explicit_connections set!")
 		end
-		@thread_cached_conns[connection_cache_key(@lock_thread || Thread.current)] ||= checkout
+		real_connection
 	  end
 
 	  def active_connection?
@@ -155,8 +150,8 @@ module ActiveRecord
 	  end
 
 	  def with_connection
-		trace "ConnectionPool.with_connection"
-		unless conn = @thread_cached_conns[connection_cache_key(@lock_thread || Thread.current)]
+		trace "ConnectionPool.with_connection (#{connection_cache_key(Thread.current)})"
+		unless conn = @thread_cached_conns[connection_cache_key(Thread.current)]
 		  conn = real_connection
 		  fresh_connection = true
 		end
@@ -216,6 +211,7 @@ module ActiveRecord
 	  end
 
 	  def checkin(conn)
+		trace "ConnectionPool.checkin"
         conn.lock.synchronize do
 	      conn.disconnect!
 		  synchronize do
@@ -303,10 +299,10 @@ module ActiveRecord
 		end
 
 		def trace(msg, depth = 1)
-		  # puts msg
+		  #puts msg
 		  #caller[1..depth].each do |line|
 		  #  puts "    \\---> #{line}"
-		  # end
+		  #end
 		end
 	end
 
