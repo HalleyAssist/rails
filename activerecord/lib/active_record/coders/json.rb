@@ -8,7 +8,11 @@ module ActiveRecord
       end
 
       def self.load(json)
-        ActiveSupport::JSON.decode(json) unless json.blank?
+        ret = ActiveSupport::JSON.decode(json) unless json.blank?
+        obj.define_singleton_method(:to_json) do
+          json
+        end
+        return ret
       end
     end
   end
