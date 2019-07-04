@@ -548,11 +548,11 @@ module ActiveRecord
         end
 
         def extract_precision(sql_type)
-          $1.to_i if sql_type =~ /\((\d+)(,\d+)?\)/
+          $1.to_i if sql_type.to_s =~ /\((\d+)(,\d+)?\)/
         end
 
         def extract_limit(sql_type)
-          $1.to_i if sql_type =~ /\((.*)\)/
+          $1.to_i if sql_type.to_s =~ /\((.*)\)/
         end
 
         def translate_exception_class(e, sql)
