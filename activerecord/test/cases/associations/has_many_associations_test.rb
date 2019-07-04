@@ -265,7 +265,7 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
     car = Car.create(name: "honda")
     car.funky_bulbs.create!
     assert_equal 1, car.funky_bulbs.count
-    assert_nothing_raised { car.reload.funky_bulbs.delete_all }
+    assert_equal 1, car.reload.funky_bulbs.delete_all
     assert_equal 0, car.funky_bulbs.count, "bulbs should have been deleted using :delete_all strategy"
   end
 
@@ -293,6 +293,14 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
     author.posts.to_a
     loaded_sql = capture_sql { author.posts.delete_all }
     assert_equal(expected_sql, loaded_sql)
+  end
+
+  def test_delete_all_on_association_clears_scope
+    author = Author.create!(name: "Gannon")
+    posts = author.posts
+    posts.create!(title: "test", body: "body")
+    posts.delete_all
+    assert_nil posts.first
   end
 
   def test_building_the_associated_object_with_implicit_sti_base_class
@@ -921,9 +929,10 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
 
     assert_predicate companies(:first_firm).clients_of_firm, :loaded?
 
-    companies(:first_firm).clients_of_firm.concat([Client.new("name" => "Natural Company"), Client.new("name" => "Apple")])
+    result = companies(:first_firm).clients_of_firm.concat([Client.new("name" => "Natural Company"), Client.new("name" => "Apple")])
     assert_equal 4, companies(:first_firm).clients_of_firm.size
     assert_equal 4, companies(:first_firm).clients_of_firm.reload.size
+    assert_equal companies(:first_firm).clients_of_firm, result
   end
 
   def test_transactions_when_adding_to_persisted
@@ -985,6 +994,26 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
     assert_empty company.contracts
     company.contracts.build
     assert_not_empty company.contracts
+  end
+
+  def test_collection_size_with_dirty_target
+    post = posts(:thinking)
+    assert_equal [], post.reader_ids
+    assert_equal 0, post.readers.size
+    post.readers.reset
+    post.readers.build
+    assert_equal [nil], post.reader_ids
+    assert_equal 1, post.readers.size
+  end
+
+  def test_collection_empty_with_dirty_target
+    post = posts(:thinking)
+    assert_equal [], post.reader_ids
+    assert_empty post.readers
+    post.readers.reset
+    post.readers.build
+    assert_equal [nil], post.reader_ids
+    assert_not_empty post.readers
   end
 
   def test_collection_size_twice_for_regressions
@@ -1264,7 +1293,7 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
     assert_equal 3, clients.count
 
     assert_difference "Client.count", -(clients.count) do
-      companies(:first_firm).dependent_clients_of_firm.delete_all
+      assert_equal clients.count, companies(:first_firm).dependent_clients_of_firm.delete_all
     end
   end
 
@@ -1358,8 +1387,18 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
   def test_delete_all_with_option_delete_all
     firm = companies(:first_firm)
     client_id = firm.dependent_clients_of_firm.first.id
-    firm.dependent_clients_of_firm.delete_all(:delete_all)
+    count = firm.dependent_clients_of_firm.count
+    assert_equal count, firm.dependent_clients_of_firm.delete_all(:delete_all)
     assert_nil Client.find_by_id(client_id)
+  end
+
+  def test_delete_all_with_option_nullify
+    firm = companies(:first_firm)
+    client_id = firm.dependent_clients_of_firm.first.id
+    count = firm.dependent_clients_of_firm.count
+    assert_equal firm, Client.find(client_id).firm
+    assert_equal count, firm.dependent_clients_of_firm.delete_all(:nullify)
+    assert_nil Client.find(client_id).firm
   end
 
   def test_delete_all_accepts_limited_parameters
@@ -1564,6 +1603,30 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
     assert destroyed.all?(&:frozen?), "destroyed clients should be frozen"
     assert companies(:first_firm).clients_of_firm.empty?, "37signals has no clients after destroy all"
     assert companies(:first_firm).clients_of_firm.reload.empty?, "37signals has no clients after destroy all and refresh"
+  end
+
+  def test_destroy_all_on_association_clears_scope
+    author = Author.create!(name: "Gannon")
+    posts = author.posts
+    posts.create!(title: "test", body: "body")
+    posts.destroy_all
+    assert_nil posts.first
+  end
+
+  def test_destroy_on_association_clears_scope
+    author = Author.create!(name: "Gannon")
+    posts = author.posts
+    post = posts.create!(title: "test", body: "body")
+    posts.destroy(post)
+    assert_nil posts.first
+  end
+
+  def test_delete_on_association_clears_scope
+    author = Author.create!(name: "Gannon")
+    posts = author.posts
+    post = posts.create!(title: "test", body: "body")
+    posts.delete(post)
+    assert_nil posts.first
   end
 
   def test_dependence
@@ -1778,6 +1841,21 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
     assert_not_predicate company.clients, :loaded?
     assert_equal [companies(:first_client).id, companies(:second_client).id, companies(:another_first_firm_client).id], company.client_ids
     assert_not_predicate company.clients, :loaded?
+  end
+
+  def test_ids_reader_cache_not_used_for_size_when_association_is_dirty
+    firm = Firm.create!(name: "Startup")
+    assert_equal 0, firm.client_ids.size
+    firm.clients.build
+    assert_equal 1, firm.clients.size
+  end
+
+  def test_ids_reader_cache_should_be_cleared_when_collection_is_deleted
+    firm = companies(:first_firm)
+    assert_equal [2, 3, 11], firm.client_ids
+    client = firm.clients.first
+    firm.clients.delete(client)
+    assert_equal [3, 11], firm.client_ids
   end
 
   def test_counter_cache_on_unloaded_association
@@ -2274,6 +2352,19 @@ class HasManyAssociationsTest < ActiveRecord::TestCase
   def test_collection_association_with_private_kernel_method
     firm = companies(:first_firm)
     assert_equal [accounts(:signals37)], firm.accounts.open
+    assert_equal [accounts(:signals37)], firm.accounts.available
+  end
+
+  def test_association_with_or_doesnt_set_inverse_instance_key
+    firm = companies(:first_firm)
+    accounts = firm.accounts.or(Account.where(firm_id: nil)).order(:id)
+    assert_equal [firm.id, nil], accounts.map(&:firm_id)
+  end
+
+  def test_association_with_rewhere_doesnt_set_inverse_instance_key
+    firm = companies(:first_firm)
+    accounts = firm.accounts.rewhere(firm_id: [firm.id, nil]).order(:id)
+    assert_equal [firm.id, nil], accounts.map(&:firm_id)
   end
 
   test "first_or_initialize adds the record to the association" do

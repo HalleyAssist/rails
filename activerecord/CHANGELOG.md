@@ -1,6 +1,174 @@
+*   PostgreSQL: Fix GROUP BY with ORDER BY virtual count attribute.
+
+    Fixes #36022.
+
+    *Ryuta Kamizono*
+
+*   Fix sqlite3 collation parsing when using decimal columns.
+
+    *Martin R. Schuster*
+
+*   Make ActiveRecord `ConnectionPool.connections` method thread-safe.
+
+    Fixes #36465.
+
+    *Jeff Doering*
+
+*   Assign all attributes before calling `build` to ensure the child record is visible in
+    `before_add` and `after_add` callbacks for `has_many :through` associations.
+
+    Fixes #33249.
+
+    *Ryan H. Kerr*
+
+
+## Rails 5.2.3 (March 27, 2019) ##
+
+*   Fix different `count` calculation when using `size` with manual `select` with DISTINCT.
+
+    Fixes #35214.
+
+    *Juani Villarejo*
+
+*   Fix prepared statements caching to be enabled even when query caching is enabled.
+
+    *Ryuta Kamizono*
+
+*   Don't allow `where` with invalid value matches to nil values.
+
+    Fixes #33624.
+
+    *Ryuta Kamizono*
+
+*   Restore an ability that class level `update` without giving ids.
+
+    Fixes #34743.
+
+    *Ryuta Kamizono*
+
+*   Fix join table column quoting with SQLite.
+
+    *Gannon McGibbon*
+
+*   Ensure that `delete_all` on collection proxy returns affected count.
+
+    *Ryuta Kamizono*
+
+*   Reset scope after delete on collection association to clear stale offsets of removed records.
+
+    *Gannon McGibbon*
+
+
+## Rails 5.2.2.1 (March 11, 2019) ##
+
+*   No changes.
+
+
+## Rails 5.2.2 (December 04, 2018) ##
+
+*   Do not ignore the scoping with query methods in the scope block.
+
+    *Ryuta Kamizono*
+
+*   Allow aliased attributes to be used in `#update_columns` and `#update`.
+
+    *Gannon McGibbon*
+
+*   Allow spaces in postgres table names.
+
+    Fixes issue where "user post" is misinterpreted as "\"user\".\"post\"" when quoting table names with the postgres
+    adapter.
+
+    *Gannon McGibbon*
+
+*   Cached columns_hash fields should be excluded from ResultSet#column_types
+
+    PR #34528 addresses the inconsistent behaviour when attribute is defined for an ignored column. The following test
+    was passing for SQLite and MySQL, but failed for PostgreSQL:
+
+    ```ruby
+    class DeveloperName < ActiveRecord::Type::String
+      def deserialize(value)
+        "Developer: #{value}"
+      end
+    end
+
+    class AttributedDeveloper < ActiveRecord::Base
+      self.table_name = "developers"
+
+      attribute :name, DeveloperName.new
+
+      self.ignored_columns += ["name"]
+    end
+
+    developer = AttributedDeveloper.create
+    developer.update_column :name, "name"
+
+    loaded_developer = AttributedDeveloper.where(id: developer.id).select("*").first
+    puts loaded_developer.name # should be "Developer: name" but it's just "name"
+    ```
+
+    *Dmitry Tsepelev*
+
+*   Values of enum are frozen, raising an error when attempting to modify them.
+
+    *Emmanuel Byrd*
+
+*   `update_columns` now correctly raises `ActiveModel::MissingAttributeError`
+    if the attribute does not exist.
+
+    *Sean Griffin*
+
+*   Do not use prepared statement in queries that have a large number of binds.
+
+    *Ryuta Kamizono*
+
+*   Fix query cache to load before first request.
+
+    *Eileen M. Uchitelle*
+
+*   Fix collection cache key with limit and custom select to avoid ambiguous timestamp column error.
+
+    Fixes #33056.
+
+    *Federico Martinez*
+
 *   Fix duplicated record creation when using nested attributes with `create_with`.
 
     *Darwin Wu*
+
+*   Fix regression setting children record in parent `before_save` callback.
+
+    *Guo Xiang Tan*
+
+*   Prevent leaking of user's DB credentials on `rails db:create` failure.
+
+    *bogdanvlviv*
+
+*   Clear mutation tracker before continuing the around callbacks.
+
+    *Yuya Tanaka*
+
+*   Prevent deadlocks when waiting for connection from pool.
+
+    *Brent Wheeldon*
+
+*   Avoid extra scoping when using `Relation#update` that was causing this method to change the current scope.
+
+    *Ryuta Kamizono*
+
+*   Fix numericality validator not to be affected by custom getter.
+
+    *Ryuta Kamizono*
+
+*   Fix bulk change table ignores comment option on PostgreSQL.
+
+    *Yoshiyuki Kinjo*
+
+
+## Rails 5.2.1.1 (November 27, 2018) ##
+
+*   No changes.
 
 
 ## Rails 5.2.1 (August 07, 2018) ##

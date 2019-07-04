@@ -1,3 +1,59 @@
+*   Use original `bundler` environment variables during the process of generating a new rails project.
+
+    *Marco Costa*
+
+*   Allow loading seeds without ActiveJob.
+
+    Fixes #35782
+
+    *Jeremy Weathers*
+
+*   Only force `:async` ActiveJob adapter to `:inline` during seeding.
+
+    *BatedUrGonnaDie*
+
+
+## Rails 5.2.3 (March 27, 2019) ##
+
+*   Seed database with inline ActiveJob job adapter.
+
+    *Gannon McGibbon*
+
+*   Fix boolean interaction in scaffold system tests.
+
+    *Gannon McGibbon*
+
+
+## Rails 5.2.2.1 (March 11, 2019) ##
+
+*   Generate random development secrets
+
+    A random development secret is now generated to tmp/development_secret.txt
+
+    This avoids an issue where development mode servers were vulnerable to
+    remote code execution.
+
+    Fixes CVE-2019-5420
+
+    *Eileen M. Uchitelle*, *Aaron Patterson*, *John Hawthorn*
+
+
+## Rails 5.2.2 (December 04, 2018) ##
+
+*   Disable content security policy for mailer previews.
+
+    *Dylan Reile*
+
+*   Log the remote IP address of clients behind a proxy.
+
+    *Atul Bhosale*
+
+
+## Rails 5.2.1.1 (November 27, 2018) ##
+
+*   No changes.
+
+
 ## Rails 5.2.1 (August 07, 2018) ##
 
 *   Respect `NODE_ENV` when running `rails yarn:install`.
